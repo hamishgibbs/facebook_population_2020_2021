@@ -15,7 +15,9 @@ default: \
 	${PWD}/data/Britain_TilePopulation/tile_fb_population.csv \
 	${PWD}/data/geometry/eng_scot_built_up_areas/eng_scot_buas.geojson \
 	${PWD}/data/lookups/tile_to_bua.csv \
-	${PWD}/data/Britain_TilePopulation/tile_baseline_fb_population.csv
+	${PWD}/data/Britain_TilePopulation/tile_baseline_fb_population.csv \
+	${PWD}/output/validation/tile_mye_pop_2020_validation.png \
+	${PWD}/output/validation/tile_mye_pop_2019_validation.png
 
 ${PWD}/data/oa_mid_year_estimates/2020/oa_mye_population_2020.csv: ${PWD}/src/combine_oa_mye.py \
 	${PWD}/data/oa_mid_year_estimates/2020/raw/*.xlsx
@@ -70,6 +72,18 @@ ${PWD}/data/Britain_TilePopulation/tile_baseline_fb_population.csv: ${PWD}/src/c
 		${PWD}/data/Britain_TilePopulation/tile_fb_population.csv
 	export TIME_WINDOW_HOUR='8' && \
 	$(PYTHON_INTERPRETER) $^ $@
+
+${PWD}/output/validation/tile_mye_pop_2019_validation.png: ${PWD}/src/validation_mye_download.R \
+		${PWD}/data/oa_mid_year_estimates/2019/tile_mye_pop_2019.csv \
+		${PWD}/data/geometry/tiles_12/tiles.shp
+	$(R_INTERPRETER) $^ $@
+
+${PWD}/output/validation/tile_mye_pop_2020_validation.png: ${PWD}/src/validation_mye_download.R \
+		${PWD}/data/oa_mid_year_estimates/2020/tile_mye_pop_2020.csv \
+		${PWD}/data/geometry/tiles_12/tiles.shp
+	$(R_INTERPRETER) $^ $@
+
+# need OA population estimates for Scotland and NI
 
 # tile_fb_population.csv X
 # reference_dates.csv X
