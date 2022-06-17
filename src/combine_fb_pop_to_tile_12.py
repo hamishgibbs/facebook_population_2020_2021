@@ -8,11 +8,12 @@ def pop_tile_13_to_tile_12(fb_pop):
     return fb_pop.groupby(
         ["quadkey", "date_time"],
         as_index=False
-        ).agg({"n_crisis": "sum"})
+        ).agg({"n_crisis": "sum",
+               "n_baseline": "sum"})
 
 
 def main():
-    usecols = ["quadkey", "date_time", "n_crisis"]
+    usecols = ["quadkey", "date_time", "n_crisis", "n_baseline"]
     dtype = {"quadkey": "str", "n_crisis": "float"}
     na_values = ["\\N"]
 
