@@ -6,14 +6,14 @@ R_INTERPRETER = /usr/local/bin/Rscript
 
 default: \
 	${PWD}/output/figs/fb_mye_2020_comparison.png \
+	${PWD}/output/figs/fb_mye_population_adjustment.png \
+	validation
+
+validation: \
 	${PWD}/output/validation/tile_mye_pop_2020_validation.png \
 	${PWD}/output/validation/tile_mye_pop_2019_validation.png \
 	${PWD}/output/validation/tile_baseline_pop_validation.png \
-	${PWD}/output/validation/tile_fb_mye_proportion_validation.png \
-	${PWD}/data/Britain_TilePopulation/tile_baseline_mye_pop_proportion.csv \
-	${PWD}/data/Britain_TilePopulation/tile_fb_pop_adjusted_absolute.csv \
-	${PWD}/data/geometry/tiles_12/tiles.shp \
-	${PWD}/output/figs/fb_mye_population_adjustment.png
+	${PWD}/output/validation/tile_fb_mye_proportion_validation.png
 
 # --- Clean national MYE population data ---
 
