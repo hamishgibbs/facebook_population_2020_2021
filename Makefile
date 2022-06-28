@@ -8,7 +8,12 @@ default: \
 	${PWD}/output/figs/fb_mye_2020_comparison.png \
 	${PWD}/output/validation/tile_mye_pop_2020_validation.png \
 	${PWD}/output/validation/tile_mye_pop_2019_validation.png \
-	${PWD}/data/Britain_TilePopulation/tile_baseline_mye_pop_proportion.csv
+	${PWD}/output/validation/tile_baseline_pop_validation.png \
+	${PWD}/output/validation/tile_fb_mye_proportion_validation.png \
+	${PWD}/data/Britain_TilePopulation/tile_baseline_mye_pop_proportion.csv \
+	${PWD}/data/Britain_TilePopulation/tile_fb_pop_adjusted_absolute.csv \
+	${PWD}/data/geometry/tiles_12/tiles.shp \
+	${PWD}/output/figs/fb_mye_population_adjustment.png
 
 # --- Clean national MYE population data ---
 
@@ -61,6 +66,10 @@ ${PWD}/data/mid_year_estimates/2020/uk_mye_population_2020.csv: ${PWD}/src/conca
 	$(PYTHON_INTERPRETER) $^ $@
 
 # --- Create national census geography lookups ---
+
+${PWD}/data/geometry/tiles_12/tiles.shp: ${PWD}/src/unique_tile_shapes.py \
+		${PWD}/data/Britain_TilePopulation/raw/*.csv
+	$(PYTHON_INTERPRETER) $^ $@
 
 ${PWD}/data/lookups/ni_small_area_to_tile.csv: ${PWD}/src/geometry_centroid_lookup.R \
 		${PWD}/data/geometry/ni_small_areas/SA2011.shp \
@@ -155,7 +164,6 @@ ${PWD}/data/lookups/tile_mye_pop_deciles_2019.csv: ${PWD}/src/tile_mye_to_decile
 
 ${PWD}/data/Britain_TilePopulation/tile_baseline_fb_population.csv: ${PWD}/src/create_tile_fb_baseline_pop.py \
 		${PWD}/data/Britain_TilePopulation/tile_fb_population.csv
-	export TIME_WINDOW_HOUR='8' && \
 	$(PYTHON_INTERPRETER) $^ $@
 
 ${PWD}/data/Britain_TilePopulation/tile_baseline_mye_pop_proportion.csv: ${PWD}/src/calculate_baseline_mye_proportion.R \
@@ -165,36 +173,62 @@ ${PWD}/data/Britain_TilePopulation/tile_baseline_mye_pop_proportion.csv: ${PWD}/
 
 
 ${PWD}/data/Britain_TilePopulation/tile_fb_population.csv: ${PWD}/src/combine_fb_pop_to_tile_12.py \
-		${PWD}/data/Britain_TilePopulation/raw/*_0800.csv
+		${PWD}/data/Britain_TilePopulation/raw/*.csv
 	$(PYTHON_INTERPRETER) $^ $@
 
 # --- Adjust FB population given MYE ---
 
 ${PWD}/data/Britain_TilePopulation/tile_fb_pop_adjusted_absolute.csv: ${PWD}/src/adjust_fb_pop_by_mye.R \
 	${PWD}/data/Britain_TilePopulation/tile_fb_population.csv \
-	${PWD}/data/Britain_TilePopulation/tile_baseline_mye_pop_proportion.csv 
-	$(PYTHON_INTERPRETER) $^ $@
+	${PWD}/data/Britain_TilePopulation/tile_baseline_mye_pop_proportion.csv
+	$(R_INTERPRETER) $^ $@
 
 # --- Validation plots ---
 
-${PWD}/output/validation/tile_mye_pop_2019_validation.png: ${PWD}/src/validation_mye_download.R \
+${PWD}/output/validation/tile_mye_pop_2019_validation.png: ${PWD}/src/validation/univariate_tile_validation.R \
 		${PWD}/data/mid_year_estimates/tile_mye_pop_2019.csv \
 		${PWD}/data/geometry/tiles_12/tiles.shp
+	export FILL_COLNAME="population" && \
 	$(R_INTERPRETER) $^ $@
 
-${PWD}/output/validation/tile_mye_pop_2020_validation.png: ${PWD}/src/validation_mye_download.R \
+${PWD}/output/validation/tile_mye_pop_2020_validation.png: ${PWD}/src/validation/univariate_tile_validation.R \
 		${PWD}/data/mid_year_estimates/tile_mye_pop_2020.csv \
 		${PWD}/data/geometry/tiles_12/tiles.shp
+	export FILL_COLNAME="population" && \
+	$(R_INTERPRETER) $^ $@
+
+${PWD}/output/validation/tile_baseline_pop_validation.png: ${PWD}/src/validation/univariate_tile_validation_by_hour.R \
+		${PWD}/data/Britain_TilePopulation/tile_baseline_fb_population.csv \
+		${PWD}/data/geometry/tiles_12/tiles.shp
+	export FILL_COLNAME="n_baseline" && \
+	$(R_INTERPRETER) $^ $@
+
+${PWD}/output/validation/tile_fb_mye_proportion_validation.png: ${PWD}/src/validation/univariate_tile_validation_by_hour.R \
+		${PWD}/data/Britain_TilePopulation/tile_baseline_mye_pop_proportion.csv \
+		${PWD}/data/geometry/tiles_12/tiles.shp
+	export FILL_COLNAME="baseline_mye_prop" && \
 	$(R_INTERPRETER) $^ $@
 
 # --- Publication plots ---
 
 ${PWD}/output/figs/fb_mye_2020_comparison.png: ${PWD}/src/plot_comparison_fb_mye_pop_proportional.R \
-	${PWD}/data/mid_year_estimates/tile_mye_pop_2020.csv \
-  ${PWD}/data/lookups/tile_mye_pop_deciles_2019.csv \
-  ${PWD}/data/Britain_TilePopulation/tile_fb_population.csv
+		${PWD}/data/Britain_TilePopulation/tile_baseline_mye_pop_proportion.csv \
+	  ${PWD}/data/lookups/tile_mye_pop_deciles_2019.csv \
+	  ${PWD}/data/Britain_TilePopulation/tile_fb_population.csv
 	$(R_INTERPRETER) $^ $@
 
+${PWD}/output/figs/fb_mye_population_adjustment.png: ${PWD}/src/plot_fb_pop_adjusted_comparison.R \
+		${PWD}/data/Britain_TilePopulation/tile_baseline_mye_pop_proportion.csv \
+		${PWD}/data/geometry/tiles_12/tiles.shp \
+		${PWD}/data/Britain_TilePopulation/tile_fb_pop_adjusted_absolute.csv \
+		${PWD}/data/config/period_lines.rds \
+		${PWD}/data/config/period_rectangles_inf.rds
+	export FOCUS_HOUR_WINDOW="16" && \
+	$(R_INTERPRETER) $^ $@
+
+# Figure 1 comparison of adjusted FB pop to MYE
+# Figure 2
+# pop change specifically in London
 
 #Figure 1a Baseline population for each tile (generalised or not)
 #Figure 1b Raw population of FB users over time
