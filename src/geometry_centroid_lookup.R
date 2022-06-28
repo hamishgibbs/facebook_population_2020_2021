@@ -23,6 +23,8 @@ tiles <- st_read(.args[1]) %>%
 buas <- st_read(.args[2])
 RETAIN_COLNAMES <- str_split(RETAIN_COLNAMES, ", ")[[1]]
 
+tiles <- tiles %>% st_transform(st_crs(buas)) # Transform Geometry 1 CRS to Geometry 2 CRS
+
 tile_bua_lookup <- st_join(tiles, buas) %>%
   st_drop_geometry() %>%
   select(!!RETAIN_COLNAMES)

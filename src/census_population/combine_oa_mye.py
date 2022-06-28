@@ -16,7 +16,11 @@ def main():
         pop = pd.read_excel(fn,
             sheet_name=sheet_name,
             skiprows=4)[["OA11CD", "All Ages"]]
-        pop.rename(columns={"All Ages": "population"}, inplace=True)
+        colname_mapping = {
+            "All Ages": "population",
+            "OA11CD": "area_code"
+        }
+        pop.rename(columns=colname_mapping, inplace=True)
         combined_mye.append(pop)
     combined_mye = pd.concat(combined_mye)
     assert combined_mye.shape[0] == 181_408 # The number of OAs in England and Wales

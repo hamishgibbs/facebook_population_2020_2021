@@ -5,7 +5,7 @@ suppressPackageStartupMessages({
 
 if (interactive()){
   .args <- c(
-    "data/oa_mid_year_estimates/2020/tile_mye_pop_2020.csv",
+    "data/mid_year_estimates/tile_mye_pop_2020.csv",
     "data/geometry/tiles_12/tiles.shp",
     "output/validation/tile_mye_pop_2020_validation.png"
   )
@@ -13,13 +13,20 @@ if (interactive()){
   .args <- commandArgs(trailingOnly = T)
 }
 
-ons_pop <- read_csv(.args[1])
+ons_pop <- read_csv(.args[1]) %>% 
+  mutate(quadkey = stringr::str_pad(quadkey, 12, "left", "0"))
 tiles <- st_read(.args[2])
+
+uk_pop <- scales::comma(sum(ons_pop$population))
 
 p <- tiles %>% 
   left_join(ons_pop, by="quadkey") %>% 
   drop_na(population) %>% 
   ggplot() + 
-  geom_sf()
+  geom_sf(aes(fill = population), size=0) + 
+  scale_fill_viridis_c(trans="log10") + 
+  theme_void() + 
+  theme(plot.background = element_rect(fill="white", size=0)) + 
+  labs(title=paste("Total population: ", uk_pop))
 
 ggsave(tail(.args, 1), p)
