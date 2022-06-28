@@ -7,7 +7,8 @@ R_INTERPRETER = /usr/local/bin/Rscript
 default: \
 	${PWD}/output/figs/fb_mye_2020_comparison.png \
 	${PWD}/output/validation/tile_mye_pop_2020_validation.png \
-	${PWD}/output/validation/tile_mye_pop_2019_validation.png
+	${PWD}/output/validation/tile_mye_pop_2019_validation.png \
+	${PWD}/data/Britain_TilePopulation/tile_baseline_mye_pop_proportion.csv
 
 # --- Clean national MYE population data ---
 
@@ -85,6 +86,17 @@ ${PWD}/data/lookups/scotland_oa_to_tile.csv: ${PWD}/src/geometry_centroid_lookup
 	export RETAIN_COLNAMES="quadkey, code" && \
 	$(R_INTERPRETER) $^ $@
 
+${PWD}/data/geometry/eng_scot_built_up_areas/eng_scot_buas.geojson: ${PWD}/src/combine_uk_buas.R \
+		${PWD}/data/geometry/england_built_up_areas/Built-up_Areas_December_2011_Boundaries_V2.shp \
+		${PWD}/data/geometry/scotland_built_up_areas/Settlements2020_MHW.shp
+	$(R_INTERPRETER) $^ $@
+
+${PWD}/data/lookups/tile_to_bua.csv: ${PWD}/src/geometry_centroid_lookup.R \
+		${PWD}/data/geometry/tiles_12/tiles.shp \
+		${PWD}/data/geometry/eng_scot_built_up_areas/eng_scot_buas.geojson
+	export RETAIN_COLNAMES="quadkey, bua_code, bua_name" && \
+	$(R_INTERPRETER) $^ $@
+
 # --- Aggregate MYE to tiles ---
 
 ${PWD}/data/mid_year_estimates/2019/scotland_tile_mye_population_2019.csv: ${PWD}/src/census_population/mye_to_tile.R \
@@ -139,35 +151,31 @@ ${PWD}/data/lookups/tile_mye_pop_deciles_2019.csv: ${PWD}/src/tile_mye_to_decile
 	${PWD}/data/mid_year_estimates/tile_mye_pop_2019.csv
 	$(R_INTERPRETER) $^ $@
 
-${PWD}/data/Britain_TilePopulation/tile_fb_daytime_pop.csv: ${PWD}/src/combine_fb_pop_to_tile_12.py \
-	${PWD}/data/Britain_TilePopulation/raw/*_0800.csv
-	$(PYTHON_INTERPRETER) $^ $@
-
-${PWD}/data/Britain_TilePopulation/tile_fb_population.csv: ${PWD}/src/combine_fb_pop_to_tile_12.py \
-		${PWD}/data/Britain_TilePopulation/raw/*.csv
-	$(PYTHON_INTERPRETER) $^ $@
-
-${PWD}/data/geometry/eng_scot_built_up_areas/eng_scot_buas.geojson: ${PWD}/src/combine_uk_buas.R \
-		${PWD}/data/geometry/england_built_up_areas/Built-up_Areas_December_2011_Boundaries_V2.shp \
-		${PWD}/data/geometry/scotland_built_up_areas/Settlements2020_MHW.shp
-	$(R_INTERPRETER) $^ $@
-
-${PWD}/data/lookups/tile_to_bua.csv: ${PWD}/src/geometry_centroid_lookup.R \
-		${PWD}/data/geometry/tiles_12/tiles.shp \
-		${PWD}/data/geometry/eng_scot_built_up_areas/eng_scot_buas.geojson
-	export RETAIN_COLNAMES="quadkey, bua_code, bua_name" && \
-	$(R_INTERPRETER) $^ $@
+# --- Aggregate FB population (for a specific time window) ---
 
 ${PWD}/data/Britain_TilePopulation/tile_baseline_fb_population.csv: ${PWD}/src/create_tile_fb_baseline_pop.py \
 		${PWD}/data/Britain_TilePopulation/tile_fb_population.csv
 	export TIME_WINDOW_HOUR='8' && \
 	$(PYTHON_INTERPRETER) $^ $@
 
-${PWD}/output/figs/fb_mye_2020_comparison.png: ${PWD}/src/plot_comparison_fb_mye_pop_proportional.R \
-	${PWD}/data/mid_year_estimates/tile_mye_pop_2020.csv \
-  ${PWD}/data/lookups/tile_mye_pop_deciles_2019.csv \
-  ${PWD}/data/Britain_TilePopulation/tile_fb_daytime_pop.csv
+${PWD}/data/Britain_TilePopulation/tile_baseline_mye_pop_proportion.csv: ${PWD}/src/calculate_baseline_mye_proportion.R \
+		${PWD}/data/Britain_TilePopulation/tile_baseline_fb_population.csv \
+		${PWD}/data/mid_year_estimates/tile_mye_pop_2019.csv
 	$(R_INTERPRETER) $^ $@
+
+
+${PWD}/data/Britain_TilePopulation/tile_fb_population.csv: ${PWD}/src/combine_fb_pop_to_tile_12.py \
+		${PWD}/data/Britain_TilePopulation/raw/*_0800.csv
+	$(PYTHON_INTERPRETER) $^ $@
+
+# --- Adjust FB population given MYE ---
+
+${PWD}/data/Britain_TilePopulation/tile_fb_pop_adjusted_absolute.csv: ${PWD}/src/adjust_fb_pop_by_mye.R \
+	${PWD}/data/Britain_TilePopulation/tile_fb_population.csv \
+	${PWD}/data/Britain_TilePopulation/tile_baseline_mye_pop_proportion.csv 
+	$(PYTHON_INTERPRETER) $^ $@
+
+# --- Validation plots ---
 
 ${PWD}/output/validation/tile_mye_pop_2019_validation.png: ${PWD}/src/validation_mye_download.R \
 		${PWD}/data/mid_year_estimates/tile_mye_pop_2019.csv \
@@ -179,21 +187,14 @@ ${PWD}/output/validation/tile_mye_pop_2020_validation.png: ${PWD}/src/validation
 		${PWD}/data/geometry/tiles_12/tiles.shp
 	$(R_INTERPRETER) $^ $@
 
-# then we clean up any files and makefile that is no longer needed
+# --- Publication plots ---
 
-# need OA population estimates for Scotland and NI
+${PWD}/output/figs/fb_mye_2020_comparison.png: ${PWD}/src/plot_comparison_fb_mye_pop_proportional.R \
+	${PWD}/data/mid_year_estimates/tile_mye_pop_2020.csv \
+  ${PWD}/data/lookups/tile_mye_pop_deciles_2019.csv \
+  ${PWD}/data/Britain_TilePopulation/tile_fb_population.csv
+	$(R_INTERPRETER) $^ $@
 
-# tile_fb_population.csv X
-# reference_dates.csv X
-# tile_to_bua_lookup.csv X
-# tile_baseline_fb_population.csv X
-# tile_ons_population_decile_lookup.csv X
-# tile_ons_population_{year}.csv X
-# check ONS population estimates by plotting
-
-# tile_population_date_subtraction_{date}.csv
-# tile_population_displacement.csv
-# ons_population_quantile_population_date_subtraction_{date}.csv
 
 #Figure 1a Baseline population for each tile (generalised or not)
 #Figure 1b Raw population of FB users over time
