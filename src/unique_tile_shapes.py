@@ -24,6 +24,7 @@ def read_pop_file_quadkeys_level_12(fn):
     fb_pop = pd.read_csv(fn,
         usecols=["quadkey"],
         dtype={"quadkey": "str"})
+    fb_pop["quadkey"] = fb_pop["quadkey"].str.pad(13, "left", "0")
     fb_pop["quadkey"] = fb_pop["quadkey"].str[:-1]
     return fb_pop["quadkey"]
 

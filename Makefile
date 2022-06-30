@@ -226,8 +226,10 @@ ${PWD}/output/figs/fb_mye_population_adjustment.png: ${PWD}/src/plot_fb_pop_adju
 	export FOCUS_HOUR_WINDOW="16" && \
 	$(R_INTERPRETER) $^ $@
 
-# Figure 1 comparison of adjusted FB pop to MYE
-# Figure 2
+# Figure 1 comparison of adjusted FB pop to MYE X
+# Figure 2 Maps and timeseries of population change in BUAs
+# Figure 3 Total population displacement through time
+# Figure 4 Population change in deciles
 # pop change specifically in London
 
 #Figure 1a Baseline population for each tile (generalised or not)
