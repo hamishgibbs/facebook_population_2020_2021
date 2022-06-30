@@ -7,7 +7,9 @@ R_INTERPRETER = /usr/local/bin/Rscript
 default: \
 	${PWD}/output/figs/fb_mye_2020_comparison.png \
 	${PWD}/output/figs/fb_mye_population_adjustment.png \
-	validation
+	validation \
+	${PWD}/output/figs/period_pop_change_tiles.png \
+	${PWD}/output/figs/decile_pop_change.png
 
 validation: \
 	${PWD}/output/validation/tile_mye_pop_2020_validation.png \
@@ -52,18 +54,6 @@ ${PWD}/data/mid_year_estimates/2020/scotland_oa_mye_population_2020.csv: ${PWD}/
 	${PWD}/data/mid_year_estimates/2020/scotland_dz_mye_population_2020.csv \
 	${PWD}/data/lookups/scotland_oa_to_dz.csv
 	$(R_INTERPRETER) $^ $@
-
-${PWD}/data/mid_year_estimates/2019/uk_mye_population_2019.csv: ${PWD}/src/concat_csv.py \
-		${PWD}/data/mid_year_estimates/2019/england_wales_mye_population_2019.csv \
-		${PWD}/data/mid_year_estimates/2019/ni_mye_population_2019.csv \
-		${PWD}/data/mid_year_estimates/2019/scotland_dz_mye_population_2019.csv
-	$(PYTHON_INTERPRETER) $^ $@
-
-${PWD}/data/mid_year_estimates/2020/uk_mye_population_2020.csv: ${PWD}/src/concat_csv.py \
-		${PWD}/data/mid_year_estimates/2020/england_wales_mye_population_2020.csv \
-		${PWD}/data/mid_year_estimates/2020/ni_mye_population_2020.csv \
-		${PWD}/data/mid_year_estimates/2020/scotland_dz_mye_population_2020.csv
-	$(PYTHON_INTERPRETER) $^ $@
 
 # --- Create national census geography lookups ---
 
@@ -183,6 +173,23 @@ ${PWD}/data/Britain_TilePopulation/tile_fb_pop_adjusted_absolute.csv: ${PWD}/src
 	${PWD}/data/Britain_TilePopulation/tile_baseline_mye_pop_proportion.csv
 	$(R_INTERPRETER) $^ $@
 
+# --- Calculate population change around key dates ---
+
+# these 2 shouldn't be in data
+
+${PWD}/data/period_change_pop_adjusted_absolute.rds: ${PWD}/src/2_dynamic_population_change/calculate_period_pop_change_tiles.R \
+		${PWD}/data/config/periods.rds \
+		${PWD}/data/Britain_TilePopulation/tile_fb_pop_adjusted_absolute.csv
+	export FOCUS_HOUR_WINDOW="16" && \
+	$(R_INTERPRETER) $^ $@
+
+${PWD}/data/period_decile_change_pop_adjusted_absolute.rds: ${PWD}/src/3_population_density/calculate_period_pop_change_deciles.R \
+		${PWD}/data/config/periods.rds \
+		${PWD}/data/Britain_TilePopulation/tile_fb_pop_adjusted_absolute.csv \
+		${PWD}/data/lookups/tile_mye_pop_deciles_2019.csv
+	export FOCUS_HOUR_WINDOW="16" && \
+	$(R_INTERPRETER) $^ $@
+
 # --- Validation plots ---
 
 ${PWD}/output/validation/tile_mye_pop_2019_validation.png: ${PWD}/src/validation/univariate_tile_validation.R \
@@ -217,7 +224,7 @@ ${PWD}/output/figs/fb_mye_2020_comparison.png: ${PWD}/src/plot_comparison_fb_mye
 	  ${PWD}/data/Britain_TilePopulation/tile_fb_population.csv
 	$(R_INTERPRETER) $^ $@
 
-${PWD}/output/figs/fb_mye_population_adjustment.png: ${PWD}/src/plot_fb_pop_adjusted_comparison.R \
+${PWD}/output/figs/fb_mye_population_adjustment.png: ${PWD}/src/1_population_overview/plot_fb_pop_adjusted_comparison.R \
 		${PWD}/data/Britain_TilePopulation/tile_baseline_mye_pop_proportion.csv \
 		${PWD}/data/geometry/tiles_12/tiles.shp \
 		${PWD}/data/Britain_TilePopulation/tile_fb_pop_adjusted_absolute.csv \
@@ -226,11 +233,43 @@ ${PWD}/output/figs/fb_mye_population_adjustment.png: ${PWD}/src/plot_fb_pop_adju
 	export FOCUS_HOUR_WINDOW="16" && \
 	$(R_INTERPRETER) $^ $@
 
+${PWD}/output/figs/bua_pop_change.rds: ${PWD}/src/2_dynamic_population_change/plot_bua_pop_change.R \
+		${PWD}/data/Britain_TilePopulation/tile_fb_pop_adjusted_absolute.csv \
+		${PWD}/data/Britain_TilePopulation/tile_baseline_mye_pop_proportion.csv \
+		${PWD}/data/lookups/tile_to_bua.csv \
+		${PWD}/data/config/period_lines.rds \
+		${PWD}/data/config/period_rectangles_inf.rds
+	export FOCUS_HOUR_WINDOW="16" && \
+	$(R_INTERPRETER) $^ $@
+
+${PWD}/output/figs/period_pop_change_tiles.png: ${PWD}/src/2_dynamic_population_change/plot_period_pop_change.R \
+		${PWD}/data/period_change_pop_adjusted_absolute.rds \
+		${PWD}/data/geometry/tiles_12/tiles.shp \
+		${PWD}/data/geometry/Regions_December_2021_EN_BFC.geojson \
+		${PWD}/output/figs/bua_pop_change.rds
+	$(R_INTERPRETER) $^ $@
+
+${PWD}/output/figs/decile_pop_change.png: ${PWD}/src/3_population_density/plot_fb_pop_change_per_decile.R \
+		${PWD}/data/Britain_TilePopulation/tile_fb_pop_adjusted_absolute.csv \
+		${PWD}/data/Britain_TilePopulation/tile_baseline_mye_pop_proportion.csv \
+		${PWD}/data/period_decile_change_pop_adjusted_absolute.rds \
+		${PWD}/data/lookups/tile_mye_pop_deciles_2019.csv \
+		${PWD}/data/geometry/tiles_12/tiles.shp \
+		${PWD}/data/config/periods.rds
+	export FOCUS_HOUR_WINDOW="16" && \
+	$(R_INTERPRETER) $^ $@
+
+
 # Figure 1 comparison of adjusted FB pop to MYE X
-# Figure 2 Maps and timeseries of population change in BUAs
+# Figure 2 Maps and timeseries of population change in BUAs X
 # Figure 3 Total population displacement through time
-# Figure 4 Population change in deciles
-# pop change specifically in London
+	# need to find this code
+# Figure 4 Population change in deciles X
+
+# 2 plots in 2 hrs!
+# make a better figure 5
+# rewrite figure 5 section
+
 
 #Figure 1a Baseline population for each tile (generalised or not)
 #Figure 1b Raw population of FB users over time

@@ -27,7 +27,7 @@ tiles <- st_read(.args[2]) %>%
   st_transform(27700)
 
 fb_pop <- read_csv(.args[3]) %>% 
-  filter(date_time <= as.POSIXct("2021-03-31"))
+  filter(date_time <= as.POSIXct("2021-03-10"))
 
 period_lines <- read_rds(.args[4])
 period_rectangles <- read_rds(.args[5])
