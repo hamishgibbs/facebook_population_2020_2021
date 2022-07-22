@@ -13,13 +13,15 @@ if(interactive()){
               "data/config/periods.rds",
               "output/figs/decile_pop_change.png")
   FOCUS_HOUR_WINDOW = 16
+  PLOT_CUTOFF_DATE <- as.Date("2021-03-31")
 } else {
   .args <- commandArgs(trailingOnly = T)
   FOCUS_HOUR_WINDOW <- as.numeric(Sys.getenv("FOCUS_HOUR_WINDOW"))
+  PLOT_CUTOFF_DATE <- as.Date(Sys.getenv("PLOT_CUTOFF_DATE"))
 }
 
 fb_pop <- read_csv(.args[1]) %>% 
-  filter(date_time <= as.POSIXct("2021-03-10"))
+  filter(date_time <= as.POSIXct(PLOT_CUTOFF_DATE))
 tile_baseline_pop <- read_csv(.args[2])
 period_change <- read_rds(.args[3])
 tile_to_decile <- read_csv(.args[4], col_types = cols(quadkey=col_character())) %>% 

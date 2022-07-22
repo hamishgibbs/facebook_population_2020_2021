@@ -16,9 +16,11 @@ if(interactive()){
               "data/config/period_rectangles.rds",
       "output/figs/fb_mye_population_adjustment.png")
   FOCUS_HOUR_WINDOW = 16
+  PLOT_CUTOFF_DATE <- as.Date("2021-03-31")
 } else {
   .args <- commandArgs(trailingOnly = T)
   FOCUS_HOUR_WINDOW <- as.numeric(Sys.getenv("FOCUS_HOUR_WINDOW"))
+  PLOT_CUTOFF_DATE <- as.Date(Sys.getenv("PLOT_CUTOFF_DATE"))
 }
 
 tile_pop <- read_csv(.args[1])
@@ -27,7 +29,7 @@ tiles <- st_read(.args[2]) %>%
   st_transform(27700)
 
 fb_pop <- read_csv(.args[3]) %>% 
-  filter(date_time <= as.POSIXct("2021-03-10"))
+  filter(date_time <= as.POSIXct(PLOT_CUTOFF_DATE))
 
 period_lines <- read_rds(.args[4])
 period_rectangles <- read_rds(.args[5])
@@ -105,11 +107,11 @@ p_n_crisis <- fb_pop %>%
   geom_hline(data = base_pops, aes(yintercept = n_baseline, color = hour), linetype = 'dashed', size = 0.5) +
   scale_color_manual(values = hour_pal) +
   scale_y_continuous(labels = scales::unit_format(unit = "M", scale = 1e-6, accuracy = 0.1)) + 
-  annotate("text", x = as.POSIXct("2020-02-15 00:00"), y = 6500000, label = "Baseline Period", size = 3) +
+  annotate("text", x = as.POSIXct("2020-02-15 00:00"), y = 6800000, label = "Baseline Period", size = 3) +
   annotate("segment", 
            x = as.POSIXct("2020-01-20 00:00"), 
            xend = as.POSIXct("2020-03-09 00:00"), 
-           y = 6300000, yend = 6300000, colour = "black", size = 0.5) +
+           y = 6600000, yend = 6600000, colour = "black", size = 0.5) +
   theme_classic() +
   labs(color = 'Time Window') +
   ylab('Number of users') +

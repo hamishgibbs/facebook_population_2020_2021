@@ -219,9 +219,12 @@ ${PWD}/output/validation/tile_fb_mye_proportion_validation.png: ${PWD}/src/valid
 # --- Publication plots ---
 
 ${PWD}/output/figs/fb_mye_2020_comparison.png: ${PWD}/src/plot_comparison_fb_mye_pop_proportional.R \
-		${PWD}/data/Britain_TilePopulation/tile_baseline_mye_pop_proportion.csv \
-	  ${PWD}/data/lookups/tile_mye_pop_deciles_2019.csv \
-	  ${PWD}/data/Britain_TilePopulation/tile_fb_population.csv
+		${PWD}/data/mid_year_estimates/tile_mye_pop_2020.csv \
+		${PWD}/data/lookups/tile_mye_pop_deciles_2019.csv \
+		${PWD}/data/Britain_TilePopulation/tile_fb_pop_adjusted_absolute.csv \
+		${PWD}/data/geometry/tiles_12/tiles.shp
+	export FOCUS_HOUR_WINDOW="16" && \
+	export PLOT_CUTOFF_DATE="2021-03-31" && \
 	$(R_INTERPRETER) $^ $@
 
 ${PWD}/output/figs/fb_mye_population_adjustment.png: ${PWD}/src/1_population_overview/plot_fb_pop_adjusted_comparison.R \
@@ -231,6 +234,7 @@ ${PWD}/output/figs/fb_mye_population_adjustment.png: ${PWD}/src/1_population_ove
 		${PWD}/data/config/period_lines.rds \
 		${PWD}/data/config/period_rectangles_inf.rds
 	export FOCUS_HOUR_WINDOW="16" && \
+	export PLOT_CUTOFF_DATE="2021-03-31" && \
 	$(R_INTERPRETER) $^ $@
 
 ${PWD}/output/figs/bua_pop_change.rds: ${PWD}/src/2_dynamic_population_change/plot_bua_pop_change.R \
@@ -257,27 +261,5 @@ ${PWD}/output/figs/decile_pop_change.png: ${PWD}/src/3_population_density/plot_f
 		${PWD}/data/geometry/tiles_12/tiles.shp \
 		${PWD}/data/config/periods.rds
 	export FOCUS_HOUR_WINDOW="16" && \
+	export PLOT_CUTOFF_DATE="2021-03-31" && \
 	$(R_INTERPRETER) $^ $@
-
-
-# Figure 1 comparison of adjusted FB pop to MYE X
-# Figure 2 Maps and timeseries of population change in BUAs X
-# Figure 3 Total population displacement through time
-	# need to find this code
-# Figure 4 Population change in deciles X
-
-# 2 plots in 2 hrs!
-# make a better figure 5
-# rewrite figure 5 section
-
-
-#Figure 1a Baseline population for each tile (generalised or not)
-#Figure 1b Raw population of FB users over time
-#Figure 1c Comparison of baseline FB population to census population per tile per time window
-#Figure 2a-d Existing code - make one panel per file
-#Figure 2e population change in top 6 BUAs
-#Figure 3. Population displacement (repeat existing with relative population)
-#Figure 4a. Population change by pop decile
-#Figure 4b. Population change either side of key dates
-#Figure 4c. Population change by pop decile
-#Figure 5. Comparison to Census population estimates

@@ -14,13 +14,15 @@ if(interactive()){
     "output/figs/bua_pop_change.rds"
   )
   FOCUS_HOUR_WINDOW = 16
+  PLOT_CUTOFF_DATE <- as.Date("2021-03-31")
 } else {
   .args <- commandArgs(trailingOnly = T)
   FOCUS_HOUR_WINDOW <- as.numeric(Sys.getenv("FOCUS_HOUR_WINDOW"))
+  PLOT_CUTOFF_DATE <- as.Date(Sys.getenv("PLOT_CUTOFF_DATE"))
 }
 
 fb_pop <- read_csv(.args[1]) %>% 
-  filter(date_time <= as.POSIXct("2021-03-10"))
+  filter(date_time <= as.POSIXct(PLOT_CUTOFF_DATE))
 baseline_pop <- read_csv(.args[2])
 tile_to_bua <- read_csv(.args[3])
 period_lines <- read_rds(.args[4])
