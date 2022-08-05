@@ -11,7 +11,7 @@ if(interactive()){
               "data/lookups/tile_to_bua.csv",
               "data/config/period_lines.rds", 
               "data/config/period_rectangles_inf.rds", 
-              "output")
+              "output/figs/case_rate_difference_bua.png")
   FOCUS_HOUR_WINDOW = 16
   PLOT_CUTOFF_DATE <- as.Date("2021-03-31")
 } else {
@@ -26,7 +26,8 @@ fb_pop <- read_csv(.args[1], col_types = cols()) %>%
 tile_pop <- read_csv(.args[2], col_types = cols())
 
 cases_bua <- read_csv(.args[3], col_types = cols()) %>% 
-  rename(bua_name = name, bua_code = code)
+  rename(bua_name = name, bua_code = code) %>% 
+  filter(date <= as.Date(PLOT_CUTOFF_DATE))
 
 tile_bua <- read_csv(.args[4], col_types = cols())
 

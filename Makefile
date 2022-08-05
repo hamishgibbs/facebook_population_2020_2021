@@ -9,7 +9,8 @@ default: \
 	${PWD}/output/figs/fb_mye_population_adjustment.png \
 	validation \
 	${PWD}/output/figs/period_pop_change_tiles.png \
-	${PWD}/output/figs/decile_pop_change.png
+	${PWD}/output/figs/decile_pop_change.png \
+	${PWD}/output/figs/case_rate_difference_bua.png
 
 validation: \
 	${PWD}/output/validation/tile_mye_pop_2020_validation.png \
@@ -260,6 +261,17 @@ ${PWD}/output/figs/decile_pop_change.png: ${PWD}/src/3_population_density/plot_f
 		${PWD}/data/lookups/tile_mye_pop_deciles_2019.csv \
 		${PWD}/data/geometry/tiles_12/tiles.shp \
 		${PWD}/data/config/periods.rds
+	export FOCUS_HOUR_WINDOW="16" && \
+	export PLOT_CUTOFF_DATE="2021-03-31" && \
+	$(R_INTERPRETER) $^ $@
+
+${PWD}/output/figs/case_rate_difference_bua.png: ${PWD}/src/4_disease_impact/cases_pop_comparison.R \
+		${PWD}/data/Britain_TilePopulation/tile_fb_pop_adjusted_absolute.csv \
+		${PWD}/data/Britain_TilePopulation/tile_baseline_mye_pop_proportion.csv \
+		${PWD}/data/cases/cases_bua.csv \
+		${PWD}/data/lookups/tile_to_bua.csv \
+		${PWD}/data/config/period_lines.rds \
+		${PWD}/data/config/period_rectangles_inf.rds
 	export FOCUS_HOUR_WINDOW="16" && \
 	export PLOT_CUTOFF_DATE="2021-03-31" && \
 	$(R_INTERPRETER) $^ $@
