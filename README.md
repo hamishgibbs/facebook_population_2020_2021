@@ -13,21 +13,3 @@ Boundary data for UK administrative geographies is available from the UK Governm
 * Middle-layer Super Output Areas (2011)
 
 Tile boundaries were extracted using the [pyquadkey2](https://pypi.org/project/pyquadkey2/) library.
-
-## Dependencies
-
-This project was written in `R (3.6.3)` and relies on the following R packages:
-
-* `tidyverse (1.3.0)`
-* `ggplot2 (3.3.3)`
-* `sf (0.9.6)`
-* `ggpubr (0.2.5)`
-* `deSolve (1.28)`
-* `data.table (1.13.2)`
-* `here (0.1)`
-* `dplyr (1.0.2)`
-
-## Contributions
-
-Have questions or find an issue with this code? Please [open an issue](https://github.com/hamishgibbs/facebook_population_2020_2021/issues/new/choose).
-
